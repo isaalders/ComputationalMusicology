@@ -1,6 +1,7 @@
 # ComputationalMusicology
 PLEASE DO NOT SHOW THIS PORTFOLIO IN CLASS
 Isa Alders - 11903309
+This line is written in R
 
 # Corpus description
 The corpus I'll be researching is a few albums made during the corona pandemic. I'll be comparing these to their previous albums and seeing how the songs have changed (I have not yet decided what I mean by "changed").
@@ -14,7 +15,7 @@ The artists and albums I chose to research are:
 This interests me because ofcourse because of corona, a lot of artists are also stuck at home and bored. I'm curious too see if this overload of time and attention leads to different music. I will compare the songs on these albums released in the pandemic with songs on previous albums of the artist. I'm not entirely sure yet about the size of the corpus. Is it good to compare this for three artists or is is better to choose one? 
 
 # Alternative: 
-I think I'm going to change my corpus to this:
+I think I'm going to change my corpus to this: 
 
 Growing up I've always listened to a lot of music at home. My parents are all big on music, especially my mom and my stepdad. Before the covid pandemic they used to go to concerts at least twice a month, and listen to music all day (this they still do). We as a family have gone to multiple concerts together, and always send in our lists for the top 2000 (an anual radio show each year where the listeners can vote for). Me and my mom have noticed that our lists always have many of the same songs on there. Now I actually have the opportunity, I would like to research the similarities in the music we listen to. I would like to do that by comparing my "Your Top Songs 2020" en "Your Top Songs 2019" to the ones of my parents account. These are lists Spotify creates for you. They contain the 100 songs you listened to most that specific year.
 
