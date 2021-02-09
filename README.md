@@ -1,7 +1,6 @@
 # ComputationalMusicology
 PLEASE DO NOT SHOW THIS PORTFOLIO IN CLASS
 Isa Alders - 11903309
-This line is written in R
 
 # Corpus description
 The corpus I'll be researching is a few albums made during the corona pandemic. I'll be comparing these to their previous albums and seeing how the songs have changed (I have not yet decided what I mean by "changed").
