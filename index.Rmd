@@ -10,21 +10,28 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
+### Three hashes = Subheading
+#### Four hashes = Subsubheading
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+If I want *italics*, I use one star around the text.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+If I want **bold**, I use two stars around the text.
 
-```{r cars}
-summary(cars)
+```{r}
+library(tidyverse)
+library(spotifyr)
+spotifyr::get_spotify_access_token()
 ```
 
-## Including Plots
+```{r}
+eighties<- get_playlist_audio_features("", "23xQYspGsaIsztrKTHM8cN")
+nineties <- get_playlist_audio_features("", "0MmrdphoTkHhChZR5ympER")
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+two_decades <-
+  bind_rows(
+    eighties %>% mutate(decade = "80s"),
+    nineties %>% mutate(decade = "90s")
+  )
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
