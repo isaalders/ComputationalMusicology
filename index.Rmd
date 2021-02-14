@@ -9,29 +9,93 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-### Three hashes = Subheading
-#### Four hashes = Subsubheading
+Growing up I've always listened to a lot of music at home. My parents are all big on music, especially my mom and my stepdad. Before the covid pandemic they used to go to concerts at least twice a month, and listen to music all day (this they still do). We as a family have gone to multiple concerts together, and always send in our lists for the top 2000 (an anual radio show each year where the listeners can vote for). Me and my mom have noticed that our lists always have many of the same songs on there. Now I actually have the opportunity, I would like to research the similarities in the music we listen to. I would like to do that by comparing my "Your Top Songs 2020" en "Your Top Songs 2019" to the ones of my parents account. These are lists Spotify creates for you. They contain the 100 songs you listened to most that specific year.
 
-If I want *italics*, I use one star around the text.
+There are a few things that could influence the outcome: (1) my mom and stepdad share a Spotify account, and since my stepdad is a little more into really old Rock than I am I don't know how much this would influence their list, (2) I'm ashamed to admit it but since the beginning of covid I've been watching a little to many TikToks, and have been listening to a lot of TikTok music. This is why I also included my 2019 list and maybe my 2018 list. My music taste back then hadn't been poisoned by TikTok :-).
 
-If I want **bold**, I use two stars around the text.
+I expect the lists to show similarities in instrumentalness, loudness, speechiness, tempo and type. Typical songs in my lists that I expect are similar to the list of my mom are Under The Influence by James Morrison, The Chain by Fleetwood Mac, Let Me Live by Rudimental and Everlasting Light by The Black Keys. Songs that I think are atypical are Yummy by Justin Bieber, Goosebumps by Travis Scott, Love Me Like You by Little Mix.
 
 ```{r}
 library(tidyverse)
 library(spotifyr)
 spotifyr::get_spotify_access_token()
+library(dplyr)
 ```
 
 ```{r}
-eighties<- get_playlist_audio_features("", "23xQYspGsaIsztrKTHM8cN")
-nineties <- get_playlist_audio_features("", "0MmrdphoTkHhChZR5ympER")
+isa <- get_playlist_audio_features("", "2JhcfrBpNKGKB5vut5PIY1")
+mh <- get_playlist_audio_features("", "5DCCNsnEiJzi3uzhkMNdkG")
 
-two_decades <-
+
+all_music <-
   bind_rows(
-    eighties %>% mutate(decade = "80s"),
-    nineties %>% mutate(decade = "90s")
+    isa %>% mutate(category = "Isa"),
+    mh %>% mutate(category = "MH")
+  )
+
+```
+
+```{r}
+all_music %>%                    # Start with awards.
+  mutate(
+    mode = ifelse(mode == 0, "Minor", "Major")
+  ) %>%
+  ggplot(                     # Set up the plot.
+    aes(
+      x = valence,
+      y = energy,
+      size = loudness,
+      colour = mode
+    )
+  ) +
+  geom_point() +              # Scatter plot.
+  geom_rug(size = 0.1) +      # Add 'fringes' to show data distribution.
+  geom_text(                  # Add text labels from above.
+    aes(
+      x = valence,
+      y = energy,
+      label = label
+    ),
+    data = 
+      tibble(
+        label = c("Altijd wel iemand", "ENERGY"),
+        category = c("Isa", "MH"),
+        valence = c(0.090, 0.123),
+        energy = c(0.101, 0.967)
+      ),
+    colour = "black",         # Override colour (not mode here).
+    size = 3,                 # Override size (not loudness here).
+    hjust = "left",           # Align left side of label with the point.
+    vjust = "bottom",         # Align bottom of label with the point.
+    nudge_x = -0.05,          # Nudge the label slightly left.
+    nudge_y = 0.02            # Nudge the label slightly up.
+  ) +
+  facet_wrap(~category) +     # Separate charts per playlist.
+  scale_x_continuous(         # Fine-tune the x axis.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),   # Use grid-lines for quadrants only.
+    minor_breaks = NULL       # Remove 'minor' grid-lines.
+  ) +
+  scale_y_continuous(         # Fine-tune the y axis in the same way.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),
+    minor_breaks = NULL
+  ) +
+  scale_colour_brewer(        # Use the Color Brewer to choose a palette.
+    type = "qual",            # Qualitative set.
+    palette = "Paired"        # Name of the palette is 'Paired'.
+  ) +
+  scale_size_continuous(      # Fine-tune the sizes of each point.
+    trans = "exp",            # Use an exp transformation to emphasise loud.
+    guide = "none"            # Remove the legend for size.
+  ) +
+  theme_light() +             # Use a simpler theme.
+  labs(                       # Make the titles nice.
+    x = "Valence",
+    y = "Energy",
+    colour = "Mode"
   )
 ```
+
 
 
