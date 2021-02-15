@@ -35,14 +35,55 @@ all_music <-
 
 ```
 
+```{r, echo=FALSE}
+ggplot(all_music, aes(danceability, fill = category)) +
+  geom_histogram(binwidth = 0.02, position = "dodge") +
+  theme_light() +           
+  labs(                     
+    x = "Danceability",
+    y = "Count",
+    fill = "Owner playlist",
+    title = "Distribution of danceability"
+  )
+```
 
-```{r}
+In the plot above we can see a histogram for the danceability. We can see that the less danceable songs are mostly present in the playlist of my parents (MH), and the more danceable songs can be found in my playlist. 
+
+```{r, echo=FALSE}
+ggplot(all_music, aes(energy, fill = category)) +
+  geom_histogram(binwidth = 0.02, position = "dodge") +
+  theme_light() +           
+  labs(                     
+    x = "Energy",
+    y = "Count",
+    fill = "Owner playlist",
+    title = "Distribution of energy"
+  )
+```
+
+In the plot above we can see a histogram for the energy We can see that in general, all songs are relatively high in energy. The playlist of my parents (MH) contains the most high energy songs. My playlist contains more medium to high level energy songs. 
+
+```{r, echo=FALSE}
+ggplot(all_music, aes(valence, fill = category)) +
+  geom_histogram(binwidth = 0.02, position = "dodge") +
+  theme_light() +           
+  labs(                     
+    x = "Valence",
+    y = "Count",
+    fill = "Owner playlist",
+    title = "Distribution of valence"
+  )
+```
+
+Above we see a histogram of the valence. We can see that this is pretty spread out, only the outliers on the more "sad" part of the spectrum are mostly from my parents playlist, and the outliers on the more "happy" part of the spectrum are mostly from my playlist.
+
+```{r, echo=FALSE}
 all_music %>%                    # Start with awards.
   mutate(
     mode = ifelse(mode == 0, "Minor", "Major")
   ) %>% 
 ggplot(aes(x = valence, y = energy, size = loudness, color = mode)) +
-  geom_point(alpha = 0.3) +
+  geom_point(alpha = 0.6) +
   facet_wrap(~ category) +
   scale_size_continuous(      # Fine-tune the sizes of each point.
     trans = "exp",            # Use an exp transformation to emphasise loud.
