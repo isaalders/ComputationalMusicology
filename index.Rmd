@@ -1,13 +1,27 @@
 ---
-title: "Index Computational Musicology"
+title: "Computational Musicology"
 author: "Isa Alders"
 date: "2/9/2021"
-output: html_document
+output: 
+    flexdashboard::flex_dashboard:
+      storyboard: true
+      theme: flatly
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(spotifyr)
+spotifyr::get_spotify_access_token()
+library(dplyr)
+library(flexdashboard)
+library(plotly)
+library(compmus)
 ```
+
+
+### Introduction 
+
 **DO NOT SHOW THIS IN CLASS**
 
 Growing up I've always listened to a lot of music at home. My parents are all big on music, especially my mom and my stepdad. Before the covid pandemic they used to go to concerts at least twice a month, and listen to music all day (this they still do). We as a family have gone to multiple concerts together, and always send in our lists for the top 2000 (an anual radio show each year where the listeners can vote for). Me and my mom have noticed that our lists always have many of the same songs on there. Now I actually have the opportunity, I would like to research the similarities in the music we listen to. I would like to do that by comparing my "Your Top Songs 2020" en "Your Top Songs 2019" to the ones of my parents account. These are lists Spotify creates for you. They contain the 100 songs you listened to most that specific year.
@@ -16,14 +30,10 @@ There are a few things that could influence the outcome: (1) my mom and stepdad 
 
 I expect the lists to show similarities in instrumentalness, loudness, speechiness, tempo and type. Typical songs in my lists that I expect are similar to the list of my mom are Under The Influence by James Morrison, The Chain by Fleetwood Mac, Let Me Live by Rudimental and Everlasting Light by The Black Keys. Songs that I think are atypical are Yummy by Justin Bieber, Goosebumps by Travis Scott, Love Me Like You by Little Mix.
 
-```{r}
-library(tidyverse)
-library(spotifyr)
-spotifyr::get_spotify_access_token()
-library(dplyr)
-```
 
-```{r}
+### Danceability {data-commentary-width=300}
+
+```{r playlists, echo=FALSE}
 isa <- get_playlist_audio_features("", "2JhcfrBpNKGKB5vut5PIY1")
 mh <- get_playlist_audio_features("", "5DCCNsnEiJzi3uzhkMNdkG")
 
@@ -36,8 +46,8 @@ all_music <-
 
 ```
 
-```{r, echo=FALSE}
-ggplot(all_music, aes(danceability, fill = category)) +
+```{r danceability, echo=FALSE}
+danceability <- ggplot(all_music, aes(danceability, fill = category)) +
   geom_histogram(binwidth = 0.02, position = "dodge") +
   theme_light() +           
   labs(                     
@@ -46,11 +56,16 @@ ggplot(all_music, aes(danceability, fill = category)) +
     fill = "Owner playlist",
     title = "Distribution of danceability"
   )
+danceability
 ```
+
+***
 
 In the plot above we can see a histogram for the danceability. We can see that the less danceable songs are mostly present in the playlist of my parents (MH), and the more danceable songs can be found in my playlist. 
 
-```{r, echo=FALSE}
+### Energy
+
+```{r energy, echo=FALSE}
 ggplot(all_music, aes(energy, fill = category)) +
   geom_histogram(binwidth = 0.02, position = "dodge") +
   theme_light() +           
@@ -62,9 +77,13 @@ ggplot(all_music, aes(energy, fill = category)) +
   )
 ```
 
+***
+
 In the plot above we can see a histogram for the energy We can see that in general, all songs are relatively high in energy. The playlist of my parents (MH) contains the most high energy songs. My playlist contains more medium to high level energy songs. 
 
-```{r, echo=FALSE}
+### Valence
+
+```{r valence, echo=FALSE}
 ggplot(all_music, aes(valence, fill = category)) +
   geom_histogram(binwidth = 0.02, position = "dodge") +
   theme_light() +           
@@ -76,15 +95,19 @@ ggplot(all_music, aes(valence, fill = category)) +
   )
 ```
 
+***
+
 Above we see a histogram of the valence. We can see that this is pretty spread out, only the outliers on the more "sad" part of the spectrum are mostly from my parents playlist, and the outliers on the more "happy" part of the spectrum are mostly from my playlist.
 
-```{r, echo=FALSE}
-all_music %>%                    # Start with awards.
+### Combination
+
+```{r combination, echo=FALSE}
+combination <- all_music %>%                    # Start with awards.
   mutate(
     mode = ifelse(mode == 0, "Minor", "Major")
   ) %>% 
 ggplot(aes(x = valence, y = energy, size = loudness, color = mode)) +
-  geom_point(alpha = 0.6) +
+  geom_point(alpha = 0.3) +
   facet_wrap(~ category) +
   scale_size_continuous(      # Fine-tune the sizes of each point.
     trans = "exp",            # Use an exp transformation to emphasise loud.
@@ -106,7 +129,39 @@ theme_light() +           # Use a simpler theme.
     size = "Loudness"
   )
   
+ggplotly(combination)
 ```
+
+*** 
 
 In these plots you can see the energy plotted against the valence. Color is used to distinguish the mode, major and minor. The size of the dot shows the loudness of the specific song. The two plots are seperated to show the plot of my own playlist on the left, and the music of my parents playlist on the right. 
 
+### Chroma 
+
+```{r, echo=FALSE}
+little_mix <-
+  get_tidy_audio_analysis("0fIOacVe000P5pNhaKQlQw") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+little_mix_plot <- little_mix %>%
+  mutate(pitches = map(pitches, compmus_normalise, "chebyshev")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+ggplotly(little_mix_plot)
+```
+*** 
+
+Here we can see a interactive plot the chroma features of the song Love Me Like You by Little Mix. A song I listened to in 2020, and which I expected to be very different than music my mother listens to.
