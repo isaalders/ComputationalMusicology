@@ -30,8 +30,9 @@ There are a few things that could influence the outcome: (1) my mom and stepdad 
 
 I expect the lists to show similarities in instrumentalness, loudness, speechiness, tempo and type. Typical songs in my lists that I expect are similar to the list of my mom are Under The Influence by James Morrison, The Chain by Fleetwood Mac, Let Me Live by Rudimental and Everlasting Light by The Black Keys. Songs that I think are atypical are Yummy by Justin Bieber, Goosebumps by Travis Scott, Love Me Like You by Little Mix.
 
+### Visualisations
 
-### Danceability {data-commentary-width=300}
+#### Danceability {data-commentary-width=300}
 
 ```{r playlists, echo=FALSE}
 isa <- get_playlist_audio_features("", "2JhcfrBpNKGKB5vut5PIY1")
@@ -63,7 +64,7 @@ danceability
 
 In the plot above we can see a histogram for the danceability. We can see that the less danceable songs are mostly present in the playlist of my parents (MH), and the more danceable songs can be found in my playlist. 
 
-### Energy
+#### Energy
 
 ```{r energy, echo=FALSE}
 ggplot(all_music, aes(energy, fill = category)) +
@@ -81,7 +82,7 @@ ggplot(all_music, aes(energy, fill = category)) +
 
 In the plot above we can see a histogram for the energy We can see that in general, all songs are relatively high in energy. The playlist of my parents (MH) contains the most high energy songs. My playlist contains more medium to high level energy songs. 
 
-### Valence
+#### Valence
 
 ```{r valence, echo=FALSE}
 ggplot(all_music, aes(valence, fill = category)) +
@@ -99,7 +100,7 @@ ggplot(all_music, aes(valence, fill = category)) +
 
 Above we see a histogram of the valence. We can see that this is pretty spread out, only the outliers on the more "sad" part of the spectrum are mostly from my parents playlist, and the outliers on the more "happy" part of the spectrum are mostly from my playlist.
 
-### Combination
+#### Combination
 
 ```{r combination, echo=FALSE}
 combination <- all_music %>%                    # Start with awards.
@@ -136,7 +137,7 @@ ggplotly(combination)
 
 In these plots you can see the energy plotted against the valence. Color is used to distinguish the mode, major and minor. The size of the dot shows the loudness of the specific song. The two plots are seperated to show the plot of my own playlist on the left, and the music of my parents playlist on the right. 
 
-### Chroma 
+#### Chroma 
 
 ```{r, echo=FALSE}
 little_mix <-
