@@ -18,6 +18,58 @@ library(flexdashboard)
 library(plotly)
 library(compmus)
 ```
+### Self-similarity matrices
+
+#### James Morrison self-similarity
+```{r, echo=FALSE}
+james_morrison <-
+  get_tidy_audio_analysis("4ZWHhsT5sgqCkARxFRtyHf") %>%
+  compmus_align(bars, segments) %>%
+  select(bars) %>%
+  unnest(bars) %>%
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  james_morrison %>%
+    compmus_self_similarity(pitches, "aitchison") %>%
+    mutate(d = d / max(d), type = "Chroma"),
+  james_morrison %>%
+    compmus_self_similarity(timbre, "euclidean") %>%
+    mutate(d = d / max(d), type = "Timbre")
+) %>%
+  mutate() %>%
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+*** 
+
+**DO NOT SHOW THIS IN CLASS**
+These are the self-similarity matrices for One Last Time by James Morrison, which I would say is a typical song in my list.
 
 
 ### Introduction 
