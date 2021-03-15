@@ -21,7 +21,7 @@ library(compmus)
 
 ### Tempograms
 
-**DO NOT SHOW THIS IN CLASS**
+
 
 ```{r, echo=FALSE}
 deep_purple <- get_tidy_audio_analysis("60ifqqPhbselSwXyGrGyMK")
@@ -30,8 +30,9 @@ deep_purple <- get_tidy_audio_analysis("60ifqqPhbselSwXyGrGyMK")
 
 ![Tempogram](/Users/Isa/Downloads/000003.png)
 
----
+---   
 
+**DO NOT SHOW THIS IN CLASS**
 Here we can see the tempogram of the song Soldier of Fortune by Deep purple. This is a song which is not typical at all for my playlist, but can be very typical for my parents, because it is a song my stepfather listens to a lot.
 
 
