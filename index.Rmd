@@ -18,6 +18,24 @@ library(flexdashboard)
 library(plotly)
 library(compmus)
 ```
+
+### Tempograms
+
+**DO NOT SHOW THIS IN CLASS**
+
+```{r, echo=FALSE}
+deep_purple <- get_tidy_audio_analysis("60ifqqPhbselSwXyGrGyMK")
+```
+
+
+![Tempogram](/Users/Isa/Downloads/000003.png)
+
+---
+
+Here we can see the tempogram of the song Soldier of Fortune by Deep purple. This is a song which is not typical at all for my playlist, but can be very typical for my parents, because it is a song my stepfather listens to a lot.
+
+
+
 ### Self-similarity matrices
 
 #### James Morrison self-similarity
@@ -68,7 +86,7 @@ bind_rows(
 ```
 *** 
 
-**DO NOT SHOW THIS IN CLASS**
+
 These are the self-similarity matrices for One Last Time by James Morrison, which I would say is a typical song in my list.
 
 
