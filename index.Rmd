@@ -290,7 +290,7 @@ fleetwood_mac2 %>%
 
 On the left we can see a chordogram of the same song as the last slide: The Chain by FLeetwood Mac. When we look at this chordogram, it seems that **G major** and **D minor** are most present in the song. 
 
-### The structure of Do I Wanna Know? {data-commentary-width=305}
+### The structure of Do I Wanna Know? in a self similarity matrix {data-commentary-width=305}
 
 ```{r, echo=FALSE}
 arctic_monkeys <-
@@ -340,7 +340,7 @@ bind_rows(
 
 *** 
 
-These are the self-similarity matrices for **Do I Wanna Know** by the **Arctic Monkeys**, which is also a song that is in both playlits. Just like Fleetwood Mac, the Arctic Monkeys are a true family favourite and we've been to multiple concerts of them together. In the timbre self-similarity matrix, a yellow cross is visible. I haven't figured out what this might be by listening to the song. The song is quite slow and steady. The two matrices are both at bars level, and I used the **aitchison** and **euclidean** normalisation, respectively. 
+These are the self-similarity matrices for **Do I Wanna Know** by the **Arctic Monkeys**, which is also a song that is in both playlits. Just like Fleetwood Mac, the Arctic Monkeys are a true family favourite and we've been to multiple concerts of them together. In the timbre self-similarity matrix, a yellow cross is visible. I haven't figured out what this might be by listening to the song. The song is quite slow and steady. The two matrices are both at bars level, and I used the **aitchison** and **euclidean** normalisation, respectively. The structure of the song is not clearly visible in the Chroma SSM. I think this also has to do with the fact that it's quite a steady song with not many changes. 
 
 <object data="https://open.spotify.com/embed/track/5FVd6KXrgO9B3JPmC8OPst" width="280" height="140">
     <embed src="https://open.spotify.com/embed/track/5FVd6KXrgO9B3JPmC8OPst" width="280" height="140"></embed>
@@ -358,7 +358,7 @@ Here we can see the tempogram of Do I Wanna Know by the Arctic Monkeys. This son
     <embed src="https://open.spotify.com/embed/track/5FVd6KXrgO9B3JPmC8OPst" width="280" height="140"></embed>
 </object>
 
-### Clustering
+### Can a classifier predict which song is my favourite or my mothers favourite? 
 
 ```{r, echo=FALSE}
 get_conf_mat <- function(fit) {
