@@ -163,7 +163,7 @@ On the left we can see a chromagram of *The Chain* by *Fleetwood Mac*. This is a
 
 ### Chordograms
 
-```{r}
+```{r echo=FALSE}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
 }
@@ -340,18 +340,13 @@ These are the self-similarity matrices for **Do I Wanna Know** by the **Arctic M
 
 ### Tempograms
 
-
-
-```{r, echo=FALSE}
-deep_purple <- get_tidy_audio_analysis("60ifqqPhbselSwXyGrGyMK")
-```
-
-
-![Tempogram](/Users/Isa/Downloads/000003.png)
+![Tempogram](/Users/Isa/Downloads/000003 (1).png)
 
 ---   
 
-**DO NOT SHOW THIS IN CLASS**   
-Here we can see the tempogram of the song Soldier of Fortune by Deep purple. This is a song which is not typical at all for my playlist, but can be very typical for my parents, because it is a song my stepfather listens to a lot.
+Here we can see the tempogram of Do I Wanna Know by the Arctic Monkeys. This song is, as stated before, a  typical one for both of our playlists. I chose this song for the tempogram, because, like I said, in my opinion, this song is very slow and steady, and very much in the same tempo. This is also visible in the tempogram, since there is a steady line around 350 BPM, and around 175 BPM. 
 
+<object data="https://open.spotify.com/embed/track/5FVd6KXrgO9B3JPmC8OPst" width="280" height="140">
+    <embed src="https://open.spotify.com/embed/track/5FVd6KXrgO9B3JPmC8OPst" width="280" height="140"></embed>
+</object>
 
