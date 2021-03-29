@@ -1,0 +1,539 @@
+---
+title:  'Computational Musicology'
+author: 'Bob Leijnse'
+date:   'February--March 2020'
+output: 
+    flexdashboard::flex_dashboard:
+      storyboard: true
+      theme: yeti
+---
+
+```{r setup}
+# In order to use these packages, we need to install flexdashboard, plotly, and Cairo.
+library(tidyverse)
+library(plotly)
+library(spotifyr)
+library(stringr)
+library(compmus)
+library(scales)
+source('spotify.R')
+
+# import albums
+the_red_album <- get_playlist_audio_features('bobleynse', '0ghyYvT2B8me30mShW8pUB')
+the_blue_album <- get_playlist_audio_features('bobleynse', '0UfoFrm53Q2G7kuQMjchvs')
+# merge datasets
+total1 <- rbind(the_red_album, the_blue_album)
+total1$track.album.name <- str_sub(total1$track.album.name, 1, str_length(total1$track.album.name)-13)
+total1$track.name <- str_sub(total1$track.name, 1, str_length(total1$track.name)-18)
+```
+
+<style>
+  body {
+  background:black;
+  }
+</style>
+
+### **The two phases of The Beatles** {data-commentary-width=800}
+
+<div style="max-width:600px; margin: 0 auto;">
+<h2>The two phases of The Beatles</h2>
+In 1973, three years after the break-up of the Beatles, two compilation albums were released: 
+<span style='color:red'><b>The Red Album</b></span> and <span style='color:blue'><b>The Blue Album</b></span>. The red album contains a collection of the best songs of the 7 albums made between 1962-1966. The blue album contains a collection of the best songs from the 6 albums released between 1967-1970.
+
+An interesting question is: "why decided Apple Records to split up the songs in two compilation albums instead of releasing one all-embracing album." According to Mark Steffen[1], the lifetime of the Beatles can be divided into different phases. He calls the time of The Red Album a phase where the songs were "dance songs whose themes were girls and falling in love." After this phase the Beatles changed, they only wrote songs in the studio, became more individualistic and they grew their hair. The songs in time of The blue Album had a different theme and sound as the group explored many new forms of music. The most famous example is the adding of a sitar in their song.
+Another possible reason is that in 1966 the so-called Studio years began. This is the period where they started to use more hours of studio time to record their album.
+
+That the Beatles changed during their lifetime is clear, but was 1967 a clear turning point to split up the two compilation albums? Or is there a better point in time to divide their music?
+</div>
+
+***
+
+<img src="beatles.jpg" width="100%">
+
+### **Did The Beatles change over time?** {data-commentary-width=600}
+
+```{r}
+# get means
+M_dif <- total1 %>%
+  group_by(playlist_name) %>%
+  arrange(desc(playlist_name)) %>%
+    summarize(dan=mean(danceability), 
+              ene=mean(energy), 
+              lou=mean(loudness),
+              spe=mean(speechiness), 
+              aco=mean(acousticness), 
+              ins=mean(instrumentalness), 
+              liv=mean(liveness), 
+              val=mean(valence), 
+              tem=mean(tempo),
+              dur=mean(track.duration_ms),
+              dansd=sd(danceability), 
+              enesd=sd(energy), 
+              lousd=sd(loudness), 
+              spesd=sd(speechiness), 
+              acosd=sd(acousticness), 
+              inssd=sd(instrumentalness), 
+              livsd=sd(liveness), 
+              valsd=sd(valence), 
+              temsd=sd(tempo),
+              dursd=mean(track.duration_ms)
+              )
+M <- rbind(tail(M_dif, 1), head(M_dif, 1))
+MF <- M %>% mutate(year=c('1963-1966\nThe Beatles in time of <span style="color:red"><b>The Red Album</b></span>', '1967-1970\nThe Beatles in time of <span style="color:blue"><b>The Blue Album</b></span>'))
+plot <- (
+  ggplot(MF) 
+  + geom_point(aes(x=year, y=dan, size=dansd, text=paste("<b>Danceability</b>\nValue:", dan, "\nSD:", dansd), alpha=0.5), col='green') 
+  + geom_line(aes(x=year, y=dan, group=1, alpha=0.5), col='green')
+  + geom_text(aes(x=0.7, y=first(dan), label='Danceability'), col='green')
+  
+  + geom_segment(aes(x=1, xend=1, y=0, yend=1), col='red', size=20, alpha=0.05)
+  + geom_segment(aes(x=2, xend=2, y=0, yend=1), col='blue', size=20, alpha=0.05)
+  
+  
+  + geom_point(aes(x=year, y=ene, size=enesd, text=paste("<b>Energy</b>\nValue:", ene, "\nSD:", enesd), alpha=0.5), col='red') 
+  + geom_line(aes(x=year, y=ene, group=1, alpha=0.5), col='red')
+  + geom_text(aes(x=0.7, y=first(ene), label='Energy'), col='red')
+  
+  + geom_point(aes(x=year, y=spe, size=spesd, text=paste("<b>Speechiness</b>\nValue:", spe, "\nSD:", spesd), alpha=0.5), col='blue') 
+  + geom_line(aes(x=year, y=spe, group=1, alpha=0.5), col='blue')
+  + geom_text(aes(x=0.7, y=first(spe), label='Speechiness'), col='blue')
+  
+  + geom_point(aes(x=year, y=aco, size=acosd, text=paste("<b>Acousticness</b>\nValue:", aco, "\nSD:", acosd), alpha=0.5), col='pink') 
+  + geom_line(aes(x=year, y=aco, group=1, alpha=0.5), col='pink')
+  + geom_text(aes(x=0.7, y=first(aco), label='Acousticness'), col='pink')
+  
+  + geom_point(aes(x=year, y=ins, size=inssd, text=paste("<b>Instrumentalness</b>\nValue:", ins, "\nSD:", inssd), alpha=0.5), col='orange') 
+  + geom_line(aes(x=year, y=ins, group=1, alpha=0.5), col='orange')
+  + geom_text(aes(x=0.7, y=first(ins), label='Instrumentalness'), col='orange')
+  
+  + geom_point(aes(x=year, y=liv, size=livsd, text=paste("<b>Liveness</b>\nValue:", liv, "\nSD:", livsd), alpha=0.5), col='purple') 
+  + geom_line(aes(x=year, y=liv, group=1, alpha=0.5), col='purple')
+  + geom_text(aes(x=0.7, y=first(liv), label='Liveness'), col='purple')
+  
+  + geom_point(aes(x=year, y=val, size=valsd, text=paste("<b>Valence</b>\nValue:", val, "\nSD:", valsd), alpha=0.5), col='black') 
+  + geom_line(aes(x=year, y=val, group=2, alpha=0.5), col='black')
+  + geom_text(aes(x=0.7, y=first(val), label='Valence'), col='black')
+  
+  + xlab('')
+  + ylab('Value')
+  + theme_light()
+  
+)
+ggplotly(plot, tooltip = c("text"))
+```
+
+***
+
+<div>
+<h2>Difference in mean features per phase</h2>
+<p>
+It is visible that some features changed a lot over time. The percentual differences of the features in the following tables the biggest were the biggest:
+</p>
+<p>
+<b>The biggest differences in value usable:</b>
+<table>
+<tr>
+  <th><b>Feature</b></th>
+  <th><b>Difference</b></th>
+</tr>
+<tr>
+  <td><span style='color:blue'>Valence</span></td>
+  <td>-30.5%</td>
+</tr>
+<tr>
+  <td><span style='color:red'>Energy</span></td>
+  <td>-19.5%</td>
+</tr>
+<tr>
+  <td><span style='color:lightgreen'>Danceability</span></td>
+  <td>-10.6%</td>
+</tr>
+</table>
+</p>
+
+<p>
+<b>The biggest differences in standard deviation usable:</b>
+<table>
+<tr>
+  <th><b>Feature</b></th>
+  <th><b>Difference</b></th>
+</tr>
+<tr>
+  <td><span style='color:blue'>Valence</span></td>
+  <td>55.0%</td>
+</tr>
+<tr>
+  <td><span style='color:lightgreen'>Danceability</span></td>
+  <td>38.1%</td>
+</tr>
+<tr>
+  <td><span style='color:red'>Energy</span></td>
+  <td>-29.8%</td>
+</tr>
+</table>
+</p>
+When you look to the plot it also looks like liveness, speechiness, instrumentalness and acousticness change a lot. However, when you look at Spotify's <a href="https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/">feature distributions</a> you only see small peaks, instead of equally distributed plots. This is the result of the fact that these features give a likelihood whether a feature is true or not. In case of The Beatles these features didn't seem very usable. For example, the average likelihood for a liveness increased from 0.19% to 0.26%, but the Spotify site mentions that: "a value above 0.8 provides strong likelihood that the track is live."
+</div>
+
+
+### **How did they change?** {data-commentary-width=600}
+
+<b>Valence, energy and danceability(size) over time per album per song</b>
+```{r}
+# merge datasets
+total <- rbind(the_red_album, the_blue_album)
+total$track.album.name <- str_sub(total$track.album.name, 1, str_length(total$track.album.name)-13)
+total$track.name <- str_sub(total$track.name, 1, str_length(total$track.name)-18)
+# make the plot
+Valence_energy <- (
+  ggplot(total, aes(x=energy, y=valence, col=playlist_name, size=danceability, text=paste("Song:", track.name, "\nAlbum:", track.album.name, "\ndanceability:", danceability)))
+  + geom_point(alpha=0.4) 
+  + facet_wrap(facet="track.album.release_date", nrow=1, ncol=13, labeller=label_wrap_gen(width=10)) 
+  + scale_color_manual(values= c("#03b5fc", "#bf0d00")) 
+  + scale_x_continuous(breaks=c(0, 0.5, 1)) 
+  + labs(x="Energy", y="Valence", col="Period" ,size="Duration in min")
+  + theme(panel.spacing.x=unit(0.1, "lines"), legend.position="bottom", legend.box = "vertical") 
+  )
+ggplotly(Valence_energy, height=400, tooltip = c("text", "x", "y")) %>%
+  layout(legend = list(orientation = "h", x = 0.1, y =-0.1))
+```
+
+***
+<b>Mean <span style='color:lightgreen'><b>Valence</b></span>, <span style='color:purple'><b>Danceability</b></span> and <span style='color:orange'><b>Energy</b></span> over time per album.</b>
+
+```{r}
+means <- total %>%
+  group_by(track.album.release_date) %>%
+  summarize(mean_valence = mean(valence),
+            mean_energy = mean(energy),
+            mean_danceability = mean(danceability),
+            mean_sd_valence = sd(valence),
+            mean_sd_energy = sd(energy),
+            mean_sd_danceability = sd(danceability),
+            release_date = first(track.album.release_date), 
+            playlist_name = first(playlist_name),
+            album_name = first(track.album.name))
+means$release_date <- as.Date(means$release_date)
+ff <- (
+  ggplot(means, aes(x=release_date, group=0.5, text=paste("Album:", album_name, "\nRelease:", release_date, "\nMean valence:", mean_valence, "\nMean energy:", mean_energy))) + 
+    geom_line(aes(y=mean_valence, col='Mean valence'), col='green') +
+    geom_line(aes(y=mean_energy, col='Mean energy'), col='orange') +
+      geom_line(aes(y=mean_danceability, col='Mean danceability'), col='purple') +
+    ylim(0.1,0.9) +
+    scale_x_date(labels = date_format("%d-%m-%Y")) +
+    geom_text(aes(y=((mean_valence+mean_energy)/2)-0.2, x=release_date, label=album_name), size=2.5) +
+    geom_segment(aes(x=release_date, xend=release_date, y=((mean_valence+mean_energy)/2)-0.2, yend=mean_valence), size=2, alpha=0.1, linetype="dotted", col=c('red', 'red', 'red', 'red', 'red', 'red', 'red', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue')) +
+    ylab("Value") +
+    theme(axis.title.x=element_blank())
+)
+ggplotly(ff, width=582, height=450, tooltip = c("text"))
+```
+
+***
+
+<div>
+<b>Three interesting things are visable:</b>
+<ul>
+  <li>The <u>valence</u> and <u>energy</u> gradually become lower over time until 1968</li>
+  <li>The <u>valence</u> and <u>energy</u> become more spread out over time.</li>
+  <li>The energy and valence seem correlated</li>
+</ul>
+There is only one big outlier visible, Tomorrow Never Knows of Revolver. When you hear that song it indeed really sounds like an outlier because of the weard sounds in it.
+</div>
+
+### **The chroma analysis of Abbey Road song Come Together.** {data-commentary-width=600}
+
+```{r}
+# construct chroma analysis
+CA_CT <- 
+    get_tidy_audio_analysis('6lSxM9BKcEZBSDKl2VODsF') %>% 
+    select(segments) %>% unnest(segments) %>% 
+    select(start, duration, pitches)
+
+CA_CT %>% 
+    mutate(pitches = map(pitches, compmus_normalise, 'euclidean')) %>% 
+    compmus_gather_chroma %>% 
+      ggplot(aes(x = start + duration / 2, width = duration, y = pitch_class, fill = value)) + 
+      geom_tile() +
+      labs(x = 'Time (s)', y = NULL, fill = 'hot') + theme_gray()
+```
+
+***
+
+<h2>Chroma analysis of the song come together</h2>
+For the following 4 pages we will dive into the song: Come Together of their last recorded album Abbey Road. We look into this song because it's one of their most popular songs and there are different takes of it available on Spotify.
+
+<div style="background-color:black">
+<iframe src="https://open.spotify.com/embed/track/6lSxM9BKcEZBSDKl2VODsF" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+</div>
+When we look at the chromagram the extracted notes are pretty good. The song is written in D-minor, which also is visible in the chroma feature. Also interesting is to see is that mainly D and C# are used a lot in the end of the song. This is correct and part of the outro that starts after 192 seconds.
+
+### **Chordograms and Keygrams don't like The Beatles** {data-commentary-width=600}
+
+```{r}
+circshift <- function(v, n) {if (n == 0) v else c(tail(v, n), head(v, -n))}
+                                    
+    # C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B 
+major_chord <- 
+    c(1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
+minor_chord <- 
+    c(1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
+seventh_chord <- 
+    c(1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
+major_key <- 
+    c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
+minor_key <-
+    c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
+chord_templates <-
+    tribble(
+        ~name  , ~template,
+        'Gb:7'  , circshift(seventh_chord,  6),
+        'Gb:maj', circshift(major_chord,    6),
+        'Bb:min', circshift(minor_chord,   10),
+        'Db:maj', circshift(major_chord,    1),
+        'F:min' , circshift(minor_chord,    5),
+        'Ab:7'  , circshift(seventh_chord,  8),
+        'Ab:maj', circshift(major_chord,    8),
+        'C:min' , circshift(minor_chord,    0),
+        'Eb:7'  , circshift(seventh_chord,  3),
+        'Eb:maj', circshift(major_chord,    3),
+        'G:min' , circshift(minor_chord,    7),
+        'Bb:7'  , circshift(seventh_chord, 10),
+        'Bb:maj', circshift(major_chord,   10),
+        'D:min' , circshift(minor_chord,    2),
+        'F:7'   , circshift(seventh_chord,  5),
+        'F:maj' , circshift(major_chord,    5),
+        'A:min' , circshift(minor_chord,    9),
+        'C:7'   , circshift(seventh_chord,  0),
+        'C:maj' , circshift(major_chord,    0),
+        'E:min' , circshift(minor_chord,    4),
+        'G:7'   , circshift(seventh_chord,  7),
+        'G:maj' , circshift(major_chord,    7),
+        'B:min' , circshift(minor_chord,   11),
+        'D:7'   , circshift(seventh_chord,  2),
+        'D:maj' , circshift(major_chord,    2),
+        'F#:min', circshift(minor_chord,    6),
+        'A:7'   , circshift(seventh_chord,  9),
+        'A:maj' , circshift(major_chord,    9),
+        'C#:min', circshift(minor_chord,    1),
+        'E:7'   , circshift(seventh_chord,  4),
+        'E:maj' , circshift(major_chord,    4),
+        'G#:min', circshift(minor_chord,    8),
+        'B:7'   , circshift(seventh_chord, 11),
+        'B:maj' , circshift(major_chord,   11),
+        'D#:min', circshift(minor_chord,    3))
+
+key_templates <-
+    tribble(
+        ~name    , ~template,
+        'Gb:maj', circshift(major_key,  6),
+        'Bb:min', circshift(minor_key, 10),
+        'Db:maj', circshift(major_key,  1),
+        'F:min' , circshift(minor_key,  5),
+        'Ab:maj', circshift(major_key,  8),
+        'C:min' , circshift(minor_key,  0),
+        'Eb:maj', circshift(major_key,  3),
+        'G:min' , circshift(minor_key,  7),
+        'Bb:maj', circshift(major_key, 10),
+        'D:min' , circshift(minor_key,  2),
+        'F:maj' , circshift(major_key,  5),
+        'A:min' , circshift(minor_key,  9),
+        'C:maj' , circshift(major_key,  0),
+        'E:min' , circshift(minor_key,  4),
+        'G:maj' , circshift(major_key,  7),
+        'B:min' , circshift(minor_key, 11),
+        'D:maj' , circshift(major_key,  2),
+        'F#:min', circshift(minor_key,  6),
+        'A:maj' , circshift(major_key,  9),
+        'C#:min', circshift(minor_key,  1),
+        'E:maj' , circshift(major_key,  4),
+        'G#:min', circshift(minor_key,  8),
+        'B:maj' , circshift(major_key, 11),
+        'D#:min', circshift(minor_key,  3))
+
+BB <- 
+  get_tidy_audio_analysis('6lSxM9BKcEZBSDKl2VODsF') %>% 
+  # change these 3 to adjust the timestamps (beats, bars, sections)
+  compmus_align(sections, segments) %>% 
+  select(sections) %>% unnest(sections) %>% 
+  mutate(
+    pitches = 
+      map(segments, 
+          compmus_summarise, pitches, 
+          method = 'mean', norm = 'manhattan'))
+
+BB %>% 
+  compmus_match_pitch_template(key_templates, 'euclidean', 'manhattan') %>% 
+  ggplot(
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = 'A', guide = 'none') +
+  theme_minimal() +
+  labs(x = 'Time (s)', y = '')
+```
+
+***
+
+<h2>Chordogram of the song come together</h2>
+
+<iframe src="https://open.spotify.com/embed/track/6lSxM9BKcEZBSDKl2VODsF" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+
+When we look at this chordogram, you'll think the key of this song is C minor or Eb major. The internet disagrees, <i>tabs.ultimate-guitar.com</i> says the key is Dm and also when I play along on the piano, I also think Dm is the right key.
+
+<b> Two possible reasons why the results are so bad in comparison to the chromagram are:</b>
+<ul>
+  <li>The song doesn't have a lot of triads.</li>
+  <li>The pitch is not based on 440Hz</li>
+</ul>
+The last reason is possible because it was harder to tune your instruments in the 60s. Also, the producers speeded the songs which adjusted the key of a song.
+
+### **A lot of repetition visible in the Come Together Self-Similarity** {data-commentary-width=600}
+
+```{r}
+# construct the Self-Similarity Matrices
+CG_CT <- 
+    get_tidy_audio_analysis('6lSxM9BKcEZBSDKl2VODsF') %>% 
+    compmus_align(bars, segments) %>% 
+    select(bars) %>% unnest(bars) %>% 
+    mutate(pitches=map(segments, compmus_summarise, pitches, method = 'rms', norm = 'euclidean')) %>% 
+    mutate(timbre=map(segments, compmus_summarise, timbre, method = 'mean'))
+
+CG_CT %>% 
+    compmus_self_similarity(timbre, 'cosine') %>% 
+    ggplot(
+        aes(
+            x = xstart + xduration / 2, 
+            width = xduration,
+            y = ystart + yduration / 2,
+            height = yduration,
+            fill = d)) + 
+    geom_tile() +
+    coord_fixed() +
+    scale_fill_viridis_c(option = 'E', guide = 'none') +
+    theme_classic() +
+    labs(x = '', y = '')
+```
+
+***
+
+<div>
+<h2>Self-Similarity Matrix of the song Come Together</h2>
+
+<iframe src="https://open.spotify.com/embed/track/6lSxM9BKcEZBSDKl2VODsF" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+
+
+In the Self-Similarity Matrix, it is visible that Come Together is a structured song with a lot of repeating parts.
+<p>
+<b>Notice that:</b> 
+<ul>
+  <li>The chorus of the song is fairly short, but repeats four times.</li>
+  <li>The chorus is also visible at the previous page at the same timestamp</li>
+  <li>Like in the chroma analysis and the chordogram, the outro is clearly visible after 192 seconds and repeats itself a lot.</li>
+</ul>
+</p>
+</div>
+
+### **Different takes are really different** {data-commentary-width=600}
+
+```{r}
+CTO <- 
+  get_tidy_audio_analysis('6lSxM9BKcEZBSDKl2VODsF') %>% 
+  select(segments) %>% unnest(segments) %>% 
+  select(start, duration, pitches)
+CT5 <- 
+  get_tidy_audio_analysis('5c6gzvWGw9EZ7qMxfH9HVy') %>% 
+  select(segments) %>% unnest(segments) %>% 
+  select(start, duration, pitches)
+
+plotje <- compmus_long_distance(
+  CTO %>% mutate(pitches = map(pitches, compmus_normalise, 'chebyshev')),
+  CT5 %>% mutate(pitches = map(pitches, compmus_normalise, 'chebyshev')),
+  feature = pitches,
+  method = 'euclidean') %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2, 
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d)) + 
+  geom_tile() +
+  scale_fill_continuous(type = 'viridis', guide = 'none') +
+  labs(x = 'Original', y = 'Take 5') +
+  theme_minimal()
+
+plotje
+```
+
+***
+
+<div>
+<h2>Dynamic timewarp of two different versions of the song Come Together</h2>
+<iframe src="https://open.spotify.com/embed/track/6lSxM9BKcEZBSDKl2VODsF" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+<iframe src="https://open.spotify.com/embed/track/5c6gzvWGw9EZ7qMxfH9HVy" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+
+<b>The following things are visible:</b>
+<ul>
+  <li>Repetition, because several diagonal lines are visible. The are spread out over the plot because they changed the structure of the song.</li>
+  <li>Homogeneity, because there are a lot of big blocks visible.</li>
+</ul>
+In these blocks, you can see that the versions are similar but not the same.The reasons for this are that: the lyrics are a little bit different, the structure of the songs are different and less instrument were used in Take 5.
+</div>
+
+### **Lucy's tempo is all over the place** {data-commentary-width=400}
+
+```{r}
+lucy <- get_tidy_audio_analysis('5h0yfg2KLqjVOKpCUTkBKo')
+
+lucy_plot <- lucy %>% 
+    tempogram(window_size = 8, hop_size = 1, cyclic = TRUE, bpms = 40:160) %>% 
+    ggplot(aes(x = time, y = bpm, fill = power)) + 
+    geom_raster() + 
+    scale_fill_viridis_c(guide = 'none') +
+    labs(x = 'Time (s)', y = 'Tempo (BPM)') +
+    theme_classic()
+
+lucy_plot
+```
+
+***
+
+<div>
+<h2>Tempogram of Lucy in the sky with Diamonds</h2>
+<iframe src="https://open.spotify.com/embed/track/25yQPHgC35WNnnOUqFhgVR" width="382" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+
+As you can see and hear, the tempo changes a lot over time. Because that it is interesting to look at the tempo detected in the Spotify features.
+The detected tempo is <b>65.09 <i>bpm</i></b>.
+
+It's interesting to see Spotify picked this bpm beacuse it's not an average of the song, but just a random point somewhere during the song. The tempo changes so regularly because the meter alternates between 3/4 and 4/4. The verse is 3/4 and the chorus is 4/4.
+</div>
+
+### **You will not get lost in a forest** {data-commentary-width=600}
+
+<div style="max-width:600px; margin: 0 auto;">
+<h2>Reduced knn phase classifier</h2>
+  <p>
+  In the previous pages, differences between phases of The Beatles were shown. This raises the question: "is it possible to build a classifier to identify to which phase a song of The Beatles belongs?"
+  </p>
+  To answer this question a random forest was used to find the most important features. In the graph in the right-top, it is visible that:
+  <ul>
+    <li>instrumentalness</li>
+    <li>duration</li>
+    <li>c01</li>
+    <li>valence</li>
+  </ul>
+  are the best features to distinguish the two phases.
+  <p>
+  At the right bottom, the performance is shown. Out of 193 songs, 67 songs of the "blue" phase are classified correctly and 76 songs of the "red" phase are classified correctly. This leaves us with an accuracy of <b>74%</b>. 
+  </p>
+In conclusion, you can say The Beatles changed a lot over time, but they always kept their own identity. Therefore it is logical to divide their albums into these two phases like Apple Records did because according to these most important features, their oeuvre is fairly accurately dividable into two phases.
+  </p>
+</div>
+
+***
+
+<b>Random forests feature importance</b>
+<img src="Gini.png" width="90%">
+
+<b>Performance of reduced <i>k</i> nearest neighbour</b>
+<img src="KNN-mosaic-ce.png" width="90%">

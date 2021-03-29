@@ -1,11 +1,11 @@
 ---
 title: "Computational Musicology"
 author: "Isa Alders"
-date: "2/9/2021"
+date: "Period 4"
 output: 
     flexdashboard::flex_dashboard:
       storyboard: true
-      theme: flatly
+      theme: yeti
 ---
 
 ```{r setup, include=FALSE}
@@ -19,21 +19,147 @@ library(plotly)
 library(compmus)
 ```
 
-### Tempograms
+### The similarity between my playlist and my mothers 
+
+Growing up I've always listened to a lot of music at home. My parents are all big on music, especially my mom and my stepdad. Before the covid pandemic they used to go to concerts at least twice a month, and listen to music all day (this they still do). We as a family have gone to multiple concerts together, and always send in our lists for the top 2000 (an annual radio show where the listeners can vote for their favourite songs). Me and my mom have noticed that our lists always have many of the same songs on there. Now I actually had the opportunity, I have researched the similarities in the music we listen to. I did this by comparing my "Your Top Songs 2020", "Your Top Songs 2019" and "Your Top Songs 2018" to the ones of my parents account. These are lists Spotify creates for you. They contain the 100 songs you listened to most that specific year. Because some playlists contained duplicates, the total of songs didn't add up to 600 songs, but a little under that. 
+
+My mother shares her Spotify account with her husband, who listens to a lot of classic rock.
 
 
+```{r playlists, echo=FALSE}
+isa <- get_playlist_audio_features("", "2JhcfrBpNKGKB5vut5PIY1")
+mh <- get_playlist_audio_features("", "5DCCNsnEiJzi3uzhkMNdkG")
 
-```{r, echo=FALSE}
-deep_purple <- get_tidy_audio_analysis("60ifqqPhbselSwXyGrGyMK")
+
+all_music <-
+  bind_rows(
+    isa %>% mutate(category = "Isa"),
+    mh %>% mutate(category = "MH")
+  )
+
 ```
 
 
-![Tempogram](/Users/Isa/Downloads/000003.png)
+### Combination {data-commentary-width=305}
 
----   
+```{r combination, echo=FALSE}
+combination <- all_music %>%                    # Start with awards.
+  ggplot(aes(x = valence, y = energy, size = instrumentalness, col = loudness)) +
+    geom_point(alpha = 0.6) +
+    facet_wrap(~ category) +
+    scale_size_continuous(      # Fine-tune the sizes of each point.
+      trans = "exp",            # Use an exp transformation to emphasise loud.
+      guide = "legend"
+    ) +
+  scale_x_continuous(         # Fine-tune the x axis.
+      limits = c(0, 1),
+      breaks = c(0, 0.50, 1),   # Use grid-lines for quadrants only.
+    ) +
+  scale_y_continuous(         # Fine-tune the y axis in the same way.
+      limits = c(0, 1),
+      breaks = c(0, 0.50, 1),
+  ) +
+  theme_light() +           # Use a simpler theme.
+    labs(                       # Make the titles nice.
+      x = "Valence",
+      y = "Energy",
+      colour = "Loudness",
+      size = "Instrumentalness"
+    ) 
+    
+combination
 
-**DO NOT SHOW THIS IN CLASS**
-Here we can see the tempogram of the song Soldier of Fortune by Deep purple. This is a song which is not typical at all for my playlist, but can be very typical for my parents, because it is a song my stepfather listens to a lot.
+
+```
+
+*** 
+
+In these plots you can see the **energy** plotted against the **valence**. **Color** is used to distinguish the **loudness** of the song. The **size** of the dot shows the **instrumentalness** of the specific song. The two plots are seperated to show the plot of my own playlist on the left, and the music of my parents playlist on the right. The two low-energy and low-valence outliers in my playlist are songs I listen to while studying, both from Ludovico Einaudi. 
+
+Something that did suprise me is the fact that there is not much difference in the loudness between the songs. This suprises me especially because there are a lot of loud, classical rock songs in the playlist of my parents. I don't really know what caused this, but maybe it's just the way spotify implements loudness. You can see that in general, the songs are all quite evenly distributed, so it's hard to draw any real conclusions from this plot.
+
+### Combination 2.0
+
+```{r combination 2.0, echo=FALSE}
+
+all_music %>%
+  ggplot(aes(x = energy, fill=category)) +
+  geom_histogram() +
+  facet_wrap(~ category, scales="free_y")+
+  scale_x_continuous(
+    limits=c(0,1),
+    breaks=c(0,0.5,1)
+  )+
+  labs(fill='Playlist owner', title='Count of energy per playlist owner') +
+  xlab('Energy') +
+  ylab("Count")
+
+all_music %>%
+  ggplot(aes(x = tempo,  fill=category)) +
+  geom_histogram() +
+  facet_wrap(~ category)+
+  scale_x_continuous(
+  limits=c(0,250),
+  breaks=c(0,125,250)
+  )+
+  labs(fill='Playlist owner', title='Count of tempo per playlist owner') +
+  xlab('Tempo')+
+  ylab("Count")
+
+
+all_music %>%
+  ggplot(aes(x = danceability, fill=category)) +
+  geom_histogram() +
+  facet_wrap(~ category, scales="free_y")+
+  scale_x_continuous(
+  limits=c(0,1),
+  breaks=c(0,0.5,1)
+  )+
+  labs(fill='Playlist owner', title='Count of danceability per playlist owner') +
+  xlab('Danceability') +
+  ylab("Count")
+```
+
+*** 
+
+Herkjebr
+
+### Zooming in on a mutual favourite 
+
+```{r, echo=FALSE}
+fleetwood_mac <-
+  get_tidy_audio_analysis("5e9TFTbltYBg2xThimr0rU") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+fleetwood_mac_plot <- fleetwood_mac %>%
+  mutate(pitches = map(pitches, compmus_normalise, "chebyshev")) %>%
+  compmus_gather_chroma() %>% 
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
+fleetwood_mac_plot
+```
+
+*** 
+
+On the left we can see a chromagram of *The Chain* by *Fleetwood Mac*. This is a song both my mom and I have in our playlists. You could say this song is one of the classics in our household, and I thought it would be nice to zoom into this song. What are typical features of a song we both like? We can see that **G#, Ab** and **E** are quite present in this song. 
+
+<div style="background-color:black">
+<iframe src="https://open.spotify.com/embed/track/5e9TFTbltYBg2xThimr0rU" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+</div>
+
+
 
 
 
@@ -85,155 +211,28 @@ bind_rows(
   theme_classic() +
   labs(x = "", y = "")
 ```
+
 *** 
 
 
 These are the self-similarity matrices for One Last Time by James Morrison, which I would say is a typical song in my list.
 
 
-### Introduction 
 
-**DO NOT SHOW THIS IN CLASS**
-
-Growing up I've always listened to a lot of music at home. My parents are all big on music, especially my mom and my stepdad. Before the covid pandemic they used to go to concerts at least twice a month, and listen to music all day (this they still do). We as a family have gone to multiple concerts together, and always send in our lists for the top 2000 (an anual radio show each year where the listeners can vote for). Me and my mom have noticed that our lists always have many of the same songs on there. Now I actually have the opportunity, I would like to research the similarities in the music we listen to. I would like to do that by comparing my "Your Top Songs 2020" en "Your Top Songs 2019" to the ones of my parents account. These are lists Spotify creates for you. They contain the 100 songs you listened to most that specific year.
-
-There are a few things that could influence the outcome: (1) my mom and stepdad share a Spotify account, and since my stepdad is a little more into really old Rock than I am I don't know how much this would influence their list, (2) I'm ashamed to admit it but since the beginning of covid I've been watching a little to many TikToks, and have been listening to a lot of TikTok music. This is why I also included my 2019 list and maybe my 2018 list. My music taste back then hadn't been poisoned by TikTok :-).
-
-I expect the lists to show similarities in instrumentalness, loudness, speechiness, tempo and type. Typical songs in my lists that I expect are similar to the list of my mom are Under The Influence by James Morrison, The Chain by Fleetwood Mac, Let Me Live by Rudimental and Everlasting Light by The Black Keys. Songs that I think are atypical are Yummy by Justin Bieber, Goosebumps by Travis Scott, Love Me Like You by Little Mix.
-
-### Visualisations
-
-#### Danceability {data-commentary-width=300}
-
-```{r playlists, echo=FALSE}
-isa <- get_playlist_audio_features("", "2JhcfrBpNKGKB5vut5PIY1")
-mh <- get_playlist_audio_features("", "5DCCNsnEiJzi3uzhkMNdkG")
+### Tempograms
 
 
-all_music <-
-  bind_rows(
-    isa %>% mutate(category = "Isa"),
-    mh %>% mutate(category = "MH")
-  )
-
-```
-
-```{r danceability, echo=FALSE}
-danceability <- ggplot(all_music, aes(danceability, fill = category)) +
-  geom_histogram(binwidth = 0.02, position = "dodge") +
-  theme_light() +           
-  labs(                     
-    x = "Danceability",
-    y = "Count",
-    fill = "Owner playlist",
-    title = "Distribution of danceability"
-  )
-danceability
-```
-
-***
-
-In the plot above we can see a histogram for the danceability. We can see that the less danceable songs are mostly present in the playlist of my parents (MH), and the more danceable songs can be found in my playlist. 
-
-#### Energy
-
-```{r energy, echo=FALSE}
-ggplot(all_music, aes(energy, fill = category)) +
-  geom_histogram(binwidth = 0.02, position = "dodge") +
-  theme_light() +           
-  labs(                     
-    x = "Energy",
-    y = "Count",
-    fill = "Owner playlist",
-    title = "Distribution of energy"
-  )
-```
-
-***
-
-In the plot above we can see a histogram for the energy We can see that in general, all songs are relatively high in energy. The playlist of my parents (MH) contains the most high energy songs. My playlist contains more medium to high level energy songs. 
-
-#### Valence
-
-```{r valence, echo=FALSE}
-ggplot(all_music, aes(valence, fill = category)) +
-  geom_histogram(binwidth = 0.02, position = "dodge") +
-  theme_light() +           
-  labs(                     
-    x = "Valence",
-    y = "Count",
-    fill = "Owner playlist",
-    title = "Distribution of valence"
-  )
-```
-
-***
-
-Above we see a histogram of the valence. We can see that this is pretty spread out, only the outliers on the more "sad" part of the spectrum are mostly from my parents playlist, and the outliers on the more "happy" part of the spectrum are mostly from my playlist.
-
-#### Combination
-
-```{r combination, echo=FALSE}
-combination <- all_music %>%                    # Start with awards.
-  mutate(
-    mode = ifelse(mode == 0, "Minor", "Major")
-  ) %>% 
-ggplot(aes(x = valence, y = energy, size = loudness, color = mode)) +
-  geom_point(alpha = 0.3) +
-  facet_wrap(~ category) +
-  scale_size_continuous(      # Fine-tune the sizes of each point.
-    trans = "exp",            # Use an exp transformation to emphasise loud.
-    guide = "legend"
-  ) +
-scale_x_continuous(         # Fine-tune the x axis.
-    limits = c(0, 1),
-    breaks = c(0, 0.50, 1),   # Use grid-lines for quadrants only.
-  ) +
-scale_y_continuous(         # Fine-tune the y axis in the same way.
-    limits = c(0, 1),
-    breaks = c(0, 0.50, 1),
-) +
-theme_light() +           # Use a simpler theme.
-  labs(                       # Make the titles nice.
-    x = "Valence",
-    y = "Energy",
-    colour = "Mode",
-    size = "Loudness"
-  )
-  
-ggplotly(combination)
-```
-
-*** 
-
-In these plots you can see the energy plotted against the valence. Color is used to distinguish the mode, major and minor. The size of the dot shows the loudness of the specific song. The two plots are seperated to show the plot of my own playlist on the left, and the music of my parents playlist on the right. 
-
-#### Chroma 
 
 ```{r, echo=FALSE}
-little_mix <-
-  get_tidy_audio_analysis("0fIOacVe000P5pNhaKQlQw") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-little_mix_plot <- little_mix %>%
-  mutate(pitches = map(pitches, compmus_normalise, "chebyshev")) %>%
-  compmus_gather_chroma() %>% 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c()
-ggplotly(little_mix_plot)
+deep_purple <- get_tidy_audio_analysis("60ifqqPhbselSwXyGrGyMK")
 ```
-*** 
 
-Here we can see a interactive plot the chroma features of the song Love Me Like You by Little Mix. A song I listened to in 2020, and which I expected to be very different than music my mother listens to.
+
+![Tempogram](/Users/Isa/Downloads/000003.png)
+
+---   
+
+**DO NOT SHOW THIS IN CLASS**   
+Here we can see the tempogram of the song Soldier of Fortune by Deep purple. This is a song which is not typical at all for my playlist, but can be very typical for my parents, because it is a song my stepfather listens to a lot.
+
+

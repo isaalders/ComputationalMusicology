@@ -1,0 +1,93 @@
+---
+title:  'Trial & Error'
+author: 'Tosca Beijaert'
+date:   'February--March 2020'
+output: 
+    flexdashboard::flex_dashboard:
+        storyboard: true
+        theme: flatly
+        orientation: rows
+        
+---
+
+
+```{r setup}
+# In order to use these packages, we need to install flexdashboard, plotly, and Cairo.
+library(tidyverse)
+library(plotly)
+library(spotifyr)
+library(Cairo)
+library(ggplot2)
+library(compmus)
+source('spotify.R')
+library(CGPfunctions)
+```
+
+
+
+### Trial
+
+
+```{r}
+newggslopegraph(dataframe=features_longer_3, Times=week, Measurement = value, Grouping = feature, Title= "Changes per Week", SubTitle = NULL, WiderLabels = TRUE, YTextSize = 4, DataTextSize = 4, DataLabelPadding = 0.0001, LineThickness = 2)
+
+newggslopegraph(dataframe=features_longer_3, Times=week, Measurement = value, Grouping = feature, Title= "Changes per Week", SubTitle = NULL, WiderLabels = TRUE, YTextSize = 4, DataTextSize = 4, DataLabelPadding = 0.0001, LineThickness = 2)
+
+
+k=ggplot(fav_sample, aes(tempo, instrumentalness))+
+  geom_point()
+
+```
+
+```{R}
+
+require(datasets)
+
+require(grDevices); require(graphics)
+
+ ## (1) The Obligatory Mathematical surface.
+ ##     Rotated sinc function.
+
+ x <- seq(-10, 10, length.out = 50)
+
+y <- x
+
+ rotsinc <- function(x,y) {
+sinc <- function(x) { y <- sin(x)/x ; y[is.na(y)] <- 1; y }
+     10 * sinc( sqrt(x^2+y^2) )
+ }
+
+ sinc.exp <- expression(z == Sinc(sqrt(x^2 + y^2)))
+
+ z <- outer(x, y, rotsinc)
+
+ oldpar <- par(bg = "white")
+
+ persp(x, y, z, theta = 30, phi = 30, expand = 0.5, col = "lightblue")
+ 
+
+ title(sub=".")## work around persp+plotmath bug
+
+ title(main = sinc.exp)
+
+ # Probeer dit
+ persp(discover_weekly1$energy, discover_weekly1$danceability, discover_weekly3$instrumentalness, theta = 30, phi = 30, expand = 0.5, col = "lightblue",
+      ltheta = 120, shade = 0.75, ticktype = "detailed",
+       xlab = "X", ylab = "Y", zlab = "Z")
+ 
+ 
+persp(discover_weekly1$energy, discover_weekly1$danceability, discover_weekly3$instrumentalness)
+ 
+
+
+
+```
+```{r}
+
+ggplot(discover_weekly1, aes(energy, danceability, col=instrumentalness, size=tempo))+
+  geom_point()
+
+
+ggplot(discover_weekly3, aes(energy, danceability, col=instrumentalness, size=tempo))+
+  geom_point()
+```
