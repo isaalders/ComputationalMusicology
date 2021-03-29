@@ -499,4 +499,4 @@ workflow() %>%
 
 ### Are our favourites indeed very similar? 
 
-Looking at the rest of the portfolio, we can say that the music of both of our favourite playlists are pretty similar. There are a few outliers and a few differences, like some hard rock in MH, and some study music in Isa, but overall the tempo, danceability and energy are pretty similar. The classifier also performs pretty well, so this also gives us an indication.
+Looking at the rest of the portfolio, we can say that the music of both of our favourite playlists are pretty similar. There are a few outliers and a few differences, like some hard rock in MH, and some study music in Isa, but overall the tempo, danceability and energy are pretty similar. The classifier also performs pretty well, so this also gives us an indication. It was fun to look at some different songs that we both like, and see the playlists side by side. This was in the end the best way to compare the both. 
