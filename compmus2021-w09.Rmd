@@ -342,23 +342,23 @@ jazz <-
 For non-vector features, we can use the `summarise_at` command to collect summary statistics like mean and standard deviation.
 
 ```{r}
-jazz %>%
+bla <- jazz %>%
   mutate(
     segments =
       map(
         segments,                                    # sections or segments
         summarise_at,
-        vars(loudness_max, duration, confidence),             # features of interest
-        list(segments_mean = mean, segments_sd = sd)   # aggregation functions
+        vars(loudness_max),             # features of interest
+        list(section_mean = mean, section_sd = sd)   # aggregation functions
       )
   ) %>%
-  unnest(sections) %>%
+  unnest(segments)%>%
   ggplot(
     aes(
-      x = confidence,
-      y = confidence_segments_sd,
+      x = loudness_max_segment_mean,
+      y = loudness_max_segment_sd,
       colour = genre,
-      alpha = loudness_max
+      alpha = loudness
     )
   ) +
   geom_point(aes(size = duration / 60)) +
@@ -366,18 +366,19 @@ jazz %>%
   theme_minimal() +
   ylim(0, 5) +
   labs(
-    x = "Mean Confidence",
-    y = "SD Confidence",
+    x = "Mean Max Loudness (bpm)",
+    y = "SD Loudness",
     colour = "Genre",
     size = "Duration (min)",
     alpha = "Volume (dBFS)"
   )
+
 ```
 
 When working with vector-valued features like chroma or timbre, we need to use functions from the previous weeks. Here is an example of comparing average timbre coefficients in bebop and big band. Coefficient 6 looks like the most promising marker distinguishing these genres, but we should verify that with cepstrograms and listening tests of specific pieces, supported by the Spotify documentation for its timbre features. 
 
 ```{r}
-jazz %>%
+bla %>%
   mutate(
     timbre =
       map(

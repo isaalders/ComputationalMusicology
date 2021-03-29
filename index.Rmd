@@ -17,14 +17,16 @@ library(dplyr)
 library(flexdashboard)
 library(plotly)
 library(compmus)
+library(tidymodels)
+library(ggdendro)
+library(heatmaply)
 ```
 
 ### The similarity between my playlist and my mothers 
 
 Growing up I've always listened to a lot of music at home. My parents are all big on music, especially my mom and my stepdad. Before the covid pandemic they used to go to concerts at least twice a month, and listen to music all day (this they still do). We as a family have gone to multiple concerts together, and always send in our lists for the top 2000 (an annual radio show where the listeners can vote for their favourite songs). Me and my mom have noticed that our lists always have many of the same songs on there. Now I actually had the opportunity, I have researched the similarities in the music we listen to. I did this by comparing my "Your Top Songs 2020", "Your Top Songs 2019" and "Your Top Songs 2018" to the ones of my parents account. These are lists Spotify creates for you. They contain the 100 songs you listened to most that specific year. Because some playlists contained duplicates, the total of songs didn't add up to 600 songs, but a little under that. 
 
-My mother shares her Spotify account with her husband, who listens to a lot of classic rock.
-
+I created two playlists in total. One with my three playlists combined named "Isa", and one with my parents three playlists combined named "MH". Furthermore, I examine a few mutual favourites on track-level features. This will help me understanding the features of specific songs we both like. 
 
 ```{r playlists, echo=FALSE}
 isa <- get_playlist_audio_features("", "2JhcfrBpNKGKB5vut5PIY1")
@@ -40,11 +42,11 @@ all_music <-
 ```
 
 
-### Combination {data-commentary-width=305}
+### Comparing the features side by side {data-commentary-width=305}
 
 ```{r combination, echo=FALSE}
 combination <- all_music %>%                    # Start with awards.
-  ggplot(aes(x = valence, y = energy, size = instrumentalness, col = loudness)) +
+  ggplot(aes(x = valence, y = energy, size = instrumentalness, col = loudness, label = track.name)) +
     geom_point(alpha = 0.6) +
     facet_wrap(~ category) +
     scale_size_continuous(      # Fine-tune the sizes of each point.
@@ -67,7 +69,7 @@ combination <- all_music %>%                    # Start with awards.
       size = "Instrumentalness"
     ) 
     
-combination
+ggplotly(combination)
 
 
 ```
@@ -78,7 +80,7 @@ In these plots you can see the **energy** plotted against the **valence**. **Col
 
 Something that did suprise me is the fact that there is not much difference in the loudness between the songs. This suprises me especially because there are a lot of loud, classical rock songs in the playlist of my parents. I don't really know what caused this, but maybe it's just the way spotify implements loudness. You can see that in general, the songs are all quite evenly distributed, so it's hard to draw any real conclusions from this plot.
 
-### Combination 2.0
+### Are my favourites more danceable than my mothers? 
 
 ```{r combination 2.0, echo=FALSE}
 
@@ -122,7 +124,13 @@ all_music %>%
 
 *** 
 
-Herkjebr
+On the left, I’ve made plots that compare the energy, the tempo and the danceability of my playlist with my mothers. Here you can easily compare the variables. 
+
+First, we have the **energy**. You can see that in the MH playlists, the energy is a little more **centred to the right**, and in the Isa playlists, the energy is more **centred in the middle**. We both barely have songs in our playlists that are very low in energy. 
+
+Next, we can look at the **tempo** feature. These plots are quite similar. Again, the mean tempo of the MH playlists is probably	a **little bit higher** than the Isa playlist, but overall, very similar. You can also see that the peak in the Isa graph is higher, but this is normal, because the Isa playlists has more songs. 
+
+Than to conclude, we have the **danceability** feature. These are again very similar. Both graphs have a peak a **little to the right**, the only difference is is that the MH playlists have a small peak a little to the right. 
 
 ### Zooming in on a mutual favourite {data-commentary-width=500}
 
@@ -161,7 +169,7 @@ On the left we can see a chromagram of *The Chain* by *Fleetwood Mac*. This is a
 </object>
 
 
-### Chordograms
+### Inspecting the chords of the common favourite
 
 ```{r echo=FALSE}
 circshift <- function(v, n) {
@@ -282,7 +290,7 @@ fleetwood_mac2 %>%
 
 On the left we can see a chordogram of the same song as the last slide: The Chain by FLeetwood Mac. When we look at this chordogram, it seems that **G major** and **D minor** are most present in the song. 
 
-### Self-similarity matrices {data-commentary-width=305}
+### The structure of Do I Wanna Know? {data-commentary-width=305}
 
 ```{r, echo=FALSE}
 arctic_monkeys <-
@@ -338,7 +346,7 @@ These are the self-similarity matrices for **Do I Wanna Know** by the **Arctic M
     <embed src="https://open.spotify.com/embed/track/5FVd6KXrgO9B3JPmC8OPst" width="280" height="140"></embed>
 </object>
 
-### Tempograms
+### Do I Wanna Know? is a very consistent song
 
 ![Tempogram](/Users/Isa/Downloads/000003 (1).png)
 
@@ -350,3 +358,145 @@ Here we can see the tempogram of Do I Wanna Know by the Arctic Monkeys. This son
     <embed src="https://open.spotify.com/embed/track/5FVd6KXrgO9B3JPmC8OPst" width="280" height="140"></embed>
 </object>
 
+### Clustering
+
+```{r, echo=FALSE}
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit %>% 
+    collect_predictions() %>% 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+
+get_pr <- function(fit) {
+  fit %>% 
+    conf_mat_resampled() %>% 
+    group_by(Prediction) %>% mutate(precision = Freq / sum(Freq)) %>% 
+    group_by(Truth) %>% mutate(recall = Freq / sum(Freq)) %>% 
+    ungroup() %>% filter(Prediction == Truth) %>% 
+    select(class = Prediction, precision, recall)
+}  
+```
+
+```{r, echo=FALSE}
+Isa <- 
+  get_playlist_audio_features("spotify", "2JhcfrBpNKGKB5vut5PIY1")
+MH <- get_playlist_audio_features("spotify", "5DCCNsnEiJzi3uzhkMNdkG")
+
+compared <-
+  bind_rows(
+    Isa %>% mutate(playlist = "Isa") %>% slice_head(n = 30),
+    MH %>% mutate(playlist = "MH") %>% slice_head(n = 30)
+  ) 
+```
+
+```{r,echo=FALSE}
+indie_features <-
+  compared %>%  # For your portfolio, change this to the name of your corpus.
+  add_audio_analysis() %>% 
+  mutate(
+    playlist = factor(playlist),
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(
+        segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean",
+      )
+  ) %>%
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) %>%
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>%
+  unnest(cols = c(pitches, timbre))
+```
+
+
+```{r,echo=FALSE}
+indie_recipe <-
+  recipe(
+    playlist ~
+      danceability +
+      speechiness +
+      acousticness +
+      valence +
+      duration +
+      
+      `F` +
+      c02 + c04 + c05 ,
+    data = indie_features,          # Use the same name as the previous block.
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())      # Converts to z-scores.
+  # step_range(all_predictors())    # Sets range to [0, 1].
+```
+
+```{r,echo=FALSE}
+indie_cv <- indie_features %>% vfold_cv(10)
+```
+```{r,echo = FALSE}
+knn_model <-
+  nearest_neighbor(neighbors = 1) %>%
+  set_mode("classification") %>% 
+  set_engine("kknn")
+indie_knn <- 
+  workflow() %>% 
+  add_recipe(indie_recipe) %>% 
+  add_model(knn_model) %>% 
+  fit_resamples(
+    indie_cv, 
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+```{r,echo=FALSE}
+indie_knn %>% get_conf_mat() %>% autoplot(type = "mosaic")
+```
+
+
+
+***
+
+In the previous part of this storyboard, the differences between the two playlists have been shown. Is it possible to classify a song to which list it belongs? I used a random forest to answer this question. On the next page, the most important features are shown. The most important features turned out to be **danceability**, **speechiness** and **duration**. These features made distinguishing the two lists the easiest. We can see in the plot on the left that most of the songs are classified in the right playlist. Only less than 20% is not classified in the right playlist. The **precision** for Isa is 0.846, and for MH 0.765. The **recall** for Isa is 0.733 and for MH 0.867. 
+
+
+
+
+### Importance of features for clustering 
+
+```{r echo=FALSE}
+forest_model <-
+  rand_forest() %>%
+  set_mode("classification") %>% 
+  set_engine("ranger", importance = "impurity")
+indie_forest <- 
+  workflow() %>% 
+  add_recipe(indie_recipe) %>% 
+  add_model(forest_model) %>% 
+  fit_resamples(
+    indie_cv, 
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+```{r echo=FALSE}
+workflow() %>% 
+  add_recipe(indie_recipe) %>% 
+  add_model(forest_model) %>% 
+  fit(indie_features) %>% 
+  pluck("fit", "fit", "fit") %>%
+  ranger::importance() %>% 
+  enframe() %>% 
+  mutate(name = fct_reorder(name, value)) %>% 
+  ggplot(aes(name, value)) + 
+  geom_col() + 
+  coord_flip() +
+  theme_minimal() +
+  labs(x = NULL, y = "Importance")
+```
+
+### Are our favourites indeed very similar? 
+
+Looking at the rest of the portfolio, we can say that the music of both of our favourite playlists are pretty similar. There are a few outliers and a few differences, like some hard rock in MH, and some study music in Isa, but overall the tempo, danceability and energy are pretty similar. The classifier also performs pretty well, so this also gives us an indication.
