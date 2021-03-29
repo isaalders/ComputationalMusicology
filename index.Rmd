@@ -155,10 +155,10 @@ fleetwood_mac_plot
 
 On the left we can see a chromagram of *The Chain* by *Fleetwood Mac*. This is a song both my mom and I have in our playlists. You could say this song is one of the classics in our household, and I thought it would be nice to zoom into this song. What are typical features of a song we both like? We can see that **G#, Ab** and **E** are quite present in this song. 
 
-<div style="background-color:black">
-<iframe src="https://open.spotify.com/embed/track/5e9TFTbltYBg2xThimr0rU" width="582" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-</div>
 
+<object data="https://open.spotify.com/embed/track/5e9TFTbltYBg2xThimr0rU" width="280" height="140">
+    <embed src="https://open.spotify.com/embed/track/5e9TFTbltYBg2xThimr0rU" width="280" height="140"></embed>
+</object>
 
 
 
